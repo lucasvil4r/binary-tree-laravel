@@ -12,15 +12,23 @@ class BinaryTreeController extends Controller
         // Busca o usuário que está no topo da árvore
         $topUser = User::whereNull('referrer_id')->first();
 
-        return view('binarytree.index', compact('topUser'));
+        // Busca os usuários que não têm filhos e estão prontos para receber novos usuários
+        $ReferrerId = User::where(function ($query) {
+            $query->orWhereNull('left_child_id')
+                ->orWhereNull('right_child_id');
+        })
+        ->orderBy('id', 'asc') // Ordena em ordem ascendente pelo ID
+        ->first(); // Obtém apenas o primeiro usuário
+
+        return view('binarytree.index', compact('topUser', 'ReferrerId'));
     }
 
     // Método para registrar um novo usuário no sistema
     public function registerUser(Request $request)
     {
         $validatedData = $request->validate([
-            'name' => 'required|string',
-            'referrer_id' => 'nullable|exists:users,id',
+            'name' => 'required|string|max:255',
+            'referrer_id' => 'nullable|integer|exists:users,id', // Validação para o ID de referência
         ]);
 
         $user = new User();
@@ -30,23 +38,24 @@ class BinaryTreeController extends Controller
         if (!empty($validatedData['referrer_id'])) {
             $referrer = User::find($validatedData['referrer_id']);
 
+            $user->referrer_id = $referrer->id;
+            $user->save();
+
             // Aloca o novo usuário na esquerda ou direita do referenciador
             if (is_null($referrer->left_child_id)) {
                 $referrer->left_child_id = $user->id;
             } elseif (is_null($referrer->right_child_id)) {
                 $referrer->right_child_id = $user->id;
             } else {
-                return response()->json(['error' => 'O usuário já tem dois filhos!'], 400);
+                return redirect()->route('binarytree.index')->with('error', 'O usuário já tem dois filhos!');
             }
 
             $referrer->save();
-            $user->referrer_id = $referrer->id;
+        } else {
+            $user->save();
         }
 
-        $user->save();
-        // Redireciona para a página da árvore binária com uma mensagem de sucesso
-        //return redirect()->route('binarytree.index')->with('success', 'Usuário cadastrado com sucesso!');
-        return response()->json($user, 201);
+        return redirect()->route('binarytree.index')->with('success', 'Usuário cadastrado com sucesso!');
     }
 
     // Método para adicionar pontos a um usuário
@@ -60,7 +69,7 @@ class BinaryTreeController extends Controller
         $user->points += $validatedData['points'];
         $user->save();
 
-        return response()->json(['message' => 'Pontos adicionados com sucesso!', 'user' => $user]);
+        return redirect()->route('binarytree.index')->with('success', 'O usuário já tem dois filhos!');
     }
 
     // Método para obter o resumo dos pontos (lado esquerdo e direito) de um usuário
