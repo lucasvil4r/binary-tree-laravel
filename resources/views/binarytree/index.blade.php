@@ -172,6 +172,9 @@
     <h2 class="text-center">Árvore Binária de Usuários</h2>
     <div class="tree">
         @if($topUser)
+            <p>Pontos do Lado Esquerdo: <strong>{{ $leftPoints }}</strong></p>
+            <p>Pontos do Lado Direito: <strong>{{ $rightPoints }}</strong></p>
+
             @include('partials.binarynode', ['user' => $topUser, 'leftPoints' => $leftPoints, 'rightPoints' => $rightPoints])
         @else
             <p class="text-center">Nenhum usuário cadastrado ainda.</p>

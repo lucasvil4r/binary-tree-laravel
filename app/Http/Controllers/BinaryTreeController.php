@@ -61,7 +61,7 @@ class BinaryTreeController extends Controller
                 $user->points = $validatedData['points_right'];
                 $referrer->right_child_id = $user->id;
             } else {
-                return redirect()->route('binarytree.index')->with('error', 'O usuário já tem dois filhos!');
+                return redirect('/')->with('error', 'O usuário já tem dois filhos!');
             }
 
             $referrer->save();
@@ -69,6 +69,6 @@ class BinaryTreeController extends Controller
 
         $user->save();
 
-        return redirect()->route('binarytree.index')->with('success', 'Usuário cadastrado com sucesso!');
+        return redirect('/')->with('success', 'Usuário cadastrado com sucesso!');
     }
 }
