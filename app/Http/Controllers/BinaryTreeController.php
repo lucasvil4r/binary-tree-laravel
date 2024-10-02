@@ -71,4 +71,17 @@ class BinaryTreeController extends Controller
 
         return redirect('/')->with('success', 'Usuário cadastrado com sucesso!');
     }
+
+    // Método para limpar a tabela users
+    public function clearUsers()
+    {
+        try {
+            // Trunca a tabela 'users', removendo todos os dados
+            User::truncate();
+
+            return redirect('/')->with('success', 'Tabela de usuários limpa com sucesso!');
+        } catch (\Exception $e) {
+            return redirect('/')->with('error', 'Erro ao limpar a tabela de usuários: ' . $e->getMessage());
+        }
+    }
 }

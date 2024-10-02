@@ -166,6 +166,7 @@
 
         <!-- Botão de cadastro -->
         <button type="submit" class="btn btn-primary btn-block">Cadastrar Usuário</button>
+        <button id="clear-tree-btn" class="btn btn-danger btn-block">Limpar Árvore Binária</button>
     </form>
 
     <!-- Exibe a Árvore Binária de Usuários -->
@@ -186,6 +187,28 @@
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    document.getElementById('clear-tree-btn').addEventListener('click', function(event) {
+        event.preventDefault(); // Previne o comportamento padrão do botão
+        if (confirm('Você tem certeza que deseja limpar a árvore binária?')) {
+            fetch('{{ route("binarytree.clear") }}', {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}', // Inclui o token CSRF para segurança
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                window.location.reload(); // Recarrega a página após sucesso
+            })
+            .catch(error => {
+                window.location.reload(); // Recarrega a página após erro
+            });
+        }
+    });
+</script>
 
 </body>
 </html>
