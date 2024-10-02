@@ -24,8 +24,6 @@
         /* Estilos gerais para a árvore binária */
         .node {
             text-align: center;
-            position: relative;
-            display: inline-block;
             margin: 10px;
         }
 
@@ -40,6 +38,8 @@
             min-width: 120px;
             text-align: center;
             position: relative;
+            width: 100px;
+            margin: auto;
         }
 
         /* Estilo para ramificação dos filhos */
@@ -172,7 +172,7 @@
     <h2 class="text-center">Árvore Binária de Usuários</h2>
     <div class="tree">
         @if($topUser)
-            @include('partials.binarynode', ['user' => $topUser])
+            @include('partials.binarynode', ['user' => $topUser, 'leftPoints' => $leftPoints, 'rightPoints' => $rightPoints])
         @else
             <p class="text-center">Nenhum usuário cadastrado ainda.</p>
         @endif

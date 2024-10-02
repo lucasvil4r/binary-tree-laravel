@@ -12,6 +12,15 @@ class BinaryTreeController extends Controller
         // Busca o usuário que está no topo da árvore
         $topUser = User::whereNull('referrer_id')->first();
 
+        if ($topUser) {
+            $leftPoints = $topUser->calculateLeftPoints() ?? 0;
+            $rightPoints = $topUser->calculateRightPoints() ?? 0;
+        } else {
+            // Se nenhum usuário foi encontrado, defina os pontos como zero
+            $leftPoints = 0;
+            $rightPoints = 0;
+        }
+
         // Busca os usuários que não têm filhos e estão prontos para receber novos usuários
         $ReferrerId = User::where(function ($query) {
             $query->orWhereNull('left_child_id')
@@ -20,15 +29,18 @@ class BinaryTreeController extends Controller
         ->orderBy('id', 'asc') // Ordena em ordem ascendente pelo ID
         ->first(); // Obtém apenas o primeiro usuário
 
-        return view('binarytree.index', compact('topUser', 'ReferrerId'));
+        return view('binarytree.index', compact('topUser', 'ReferrerId', 'leftPoints', 'rightPoints'));
     }
 
     // Método para registrar um novo usuário no sistema
     public function registerUser(Request $request)
     {
+        // Validação dos dados do formulário
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'referrer_id' => 'nullable|integer|exists:users,id', // Validação para o ID de referência
+            'referrer_id' => 'nullable|integer|exists:users,id',
+            'points_left' => 'required|integer|min:0',
+            'points_right' => 'required|integer|min:0',
         ]);
 
         $user = new User();
@@ -43,63 +55,20 @@ class BinaryTreeController extends Controller
 
             // Aloca o novo usuário na esquerda ou direita do referenciador
             if (is_null($referrer->left_child_id)) {
+                $user->points = $validatedData['points_left'];
                 $referrer->left_child_id = $user->id;
             } elseif (is_null($referrer->right_child_id)) {
+                $user->points = $validatedData['points_right'];
                 $referrer->right_child_id = $user->id;
             } else {
                 return redirect()->route('binarytree.index')->with('error', 'O usuário já tem dois filhos!');
             }
 
             $referrer->save();
-        } else {
-            $user->save();
         }
 
-        return redirect()->route('binarytree.index')->with('success', 'Usuário cadastrado com sucesso!');
-    }
-
-    // Método para adicionar pontos a um usuário
-    public function addPoints(Request $request, $userId)
-    {
-        $validatedData = $request->validate([
-            'points' => 'required|integer|min:0',
-        ]);
-
-        $user = User::findOrFail($userId);
-        $user->points += $validatedData['points'];
         $user->save();
 
-        return redirect()->route('binarytree.index')->with('success', 'O usuário já tem dois filhos!');
-    }
-
-    // Método para obter o resumo dos pontos (lado esquerdo e direito) de um usuário
-    public function getPointsSummary($userId)
-    {
-        $user = User::findOrFail($userId);
-
-        // Soma os pontos do lado esquerdo
-        $leftPoints = $this->calculateSidePoints($user->left_child_id);
-
-        // Soma os pontos do lado direito
-        $rightPoints = $this->calculateSidePoints($user->right_child_id);
-
-        return response()->json([
-            'user' => $user->name,
-            'left_points' => $leftPoints,
-            'right_points' => $rightPoints
-        ]);
-    }
-
-    // Função recursiva para calcular os pontos de uma subárvore (esquerda ou direita)
-    private function calculateSidePoints($childId)
-    {
-        if (is_null($childId)) {
-            return 0;
-        }
-
-        $child = User::find($childId);
-
-        // Soma os pontos do usuário atual mais os pontos dos filhos
-        return $child->points + $this->calculateSidePoints($child->left_child_id) + $this->calculateSidePoints($child->right_child_id);
+        return redirect()->route('binarytree.index')->with('success', 'Usuário cadastrado com sucesso!');
     }
 }

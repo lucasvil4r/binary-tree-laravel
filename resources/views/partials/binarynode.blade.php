@@ -1,6 +1,6 @@
 <div class="node">
     <div class="user">
-        <strong>{{ $user->name }}</strong> ({{ $user->points }} pontos)
+        <strong>{{ $user->name }}</strong> <br> @if($user->points > 0) ({{ $user->points }} pts) @endif
         <p>ID: {{ $user->id }}</p>
     </div>
 
