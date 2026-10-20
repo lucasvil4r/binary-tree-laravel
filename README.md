@@ -1,60 +1,45 @@
+# Binary Tree Simulator — Laravel
 
-# Simulação de Árvore Binária
+Web application that simulates a **binary referral tree**: each user can have at most two children (left and right), new users fill the referrer's first open slot, and points are aggregated per leg.
 
-### Passo a passo
-Clone Repositório
+## Features
+
+- **Guided placement** — the form suggests the first node (by ID) with an open slot, and the new user fills the referrer's left side first, then the right.
+- **Points per leg** — recursive calculation of total points on the left and right sides of the root node.
+- **Visual tree** — the tree is rendered recursively with Blade partials.
+- **Validation** — request validation for name, referrer and points.
+- **Reset** — clears all users to restart the simulation.
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Back-end | PHP, Laravel (Eloquent, Blade, request validation) |
+| Database | MySQL 5.7 |
+| Cache / session / queue | Redis |
+| Infrastructure | Docker Compose (PHP-FPM, Nginx, MySQL, Redis, phpMyAdmin) |
+
+## How It Works
+
+| Route | Method | Action |
+|---|---|---|
+| `/` | GET | Renders the tree and the left/right point totals |
+| `/register` | POST | Creates a user and attaches it to the referrer's left or right slot |
+| `/clearusers` | DELETE | Truncates the users table |
+
+The tree is modeled on the `users` table through self-referencing relationships (`referrer_id`, `left_child_id`, `right_child_id`), and the leg totals are computed recursively in the `User` model.
+
+## Getting Started
+
 ```sh
 git clone https://github.com/lucasvil4r/binary-tree-laravel.git
+cd binary-tree-laravel
+cp .env.example .env              # adjust DB_* and REDIS_* if needed
+
+docker compose up -d
+docker compose exec app composer install
+docker compose exec app php artisan key:generate
+docker compose exec app php artisan migrate
 ```
 
-Crie o Arquivo .env
-```sh
-cp .env.example .env
-```
-
-
-Atualize as variáveis de ambiente do arquivo .env
-```dosini
-APP_NAME=ArvoreBinaria
-APP_URL=http://localhost:8989
-
-DB_CONNECTION=mysql
-DB_HOST=db
-DB_PORT=3306
-DB_DATABASE=laravel
-DB_USERNAME=root
-DB_PASSWORD=root
-
-CACHE_DRIVER=redis
-QUEUE_CONNECTION=redis
-SESSION_DRIVER=redis
-
-REDIS_HOST=redis
-REDIS_PASSWORD=null
-REDIS_PORT=6379
-```
-
-
-Suba os containers do projeto
-```sh
-docker-compose up -d
-```
-
-Instalar as dependências do projeto
-```sh
-docker-compose exec app composer install
-```
-
-
-Gerar a key do projeto Laravel
-```sh
-docker-compose exec app php artisan key:generate
-```
-
-Execute o Migrate
-```sh
-docker-compose exec app php artisan migrate
-```
-
-Acessar o projeto
-[http://localhost:8989](http://localhost:8989)
+Open <http://localhost:8989>.
